@@ -7,6 +7,9 @@ import rigoImage from "../../img/rigo-baby.jpg";
 const Home = () => {
 	const [tarea, setTarea] = useState("")
 	const [lista, setLista] = useState([])
+	const [username,setUsername]=useState("")
+
+	const URI = "https://playground.4geeks.com/apis/fake/todos/user/"
 
 	const handleInput = (e) => {
 		let texto = e.target.value
@@ -22,11 +25,22 @@ const Home = () => {
 		setLista(tempArr)
 	}
 
+	const handleUser = (e) => {
+		let nombreUsuario = e.target.value
+		setUsername(nombreUsuario)
+	}
+
+	useEffect(()=>{},[])
+	
 	return (
 		<>
 			<div className="container text-center mt-5 caja ">
 				<div className="container text-center mt-5 display-5 todos">ToDos</div>
 				<div className="paper">
+				<input className="container border-top-0 border-light" placeholder="Usuario"
+						onKeyUp={
+							(e) => { handleUser(e)}
+						} />
 					<input className="container border-top-0 border-light" placeholder="Agregar Tarea"
 						onKeyUp={
 							(e) => { handleInput(e) }
