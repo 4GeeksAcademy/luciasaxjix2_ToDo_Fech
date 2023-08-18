@@ -30,8 +30,27 @@ const Home = () => {
 		setUsername(nombreUsuario)
 	}
 
-	useEffect(()=>{},[])
-	
+	useEffect(()=>{
+		const cargaLista = async () => {
+			let response = await fetch(URI + username) //como obviamos el 2do parámetro, es método GET
+			// response en este punto es una promesa
+
+			if (response.ok) {
+				//hago algo aquí si status está entre 200-299
+				let objResponse = await response.json()
+				console.log("respuesta ok: ", objResponse) //[{done:false, label:"Ir al cine"}]
+				setLista(objResponse)
+
+			} else {
+				//error
+				console.log("Error respuesta")
+			}
+		}
+
+		cargaLista()
+
+	},[username])
+
 	return (
 		<>
 			<div className="container text-center mt-5 caja ">
