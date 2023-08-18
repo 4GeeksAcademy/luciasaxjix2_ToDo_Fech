@@ -1,91 +1,131 @@
 import React, { useState, useEffect } from "react";
 
-//include images into your bundle
-import rigoImage from "../../img/rigo-baby.jpg";
+const urlBase = "https://playground.4geeks.com/apis/fake/todos/user/luciasajix2"
+const estadoIncial = {
+	label: "", done: false
+}
 
 //create your first component
 const Home = () => {
-	const [tarea, setTarea] = useState("")
+	const [tarea, setTarea] = useState(estadoIncial)
 	const [lista, setLista] = useState([])
-	const [username,setUsername]=useState("")
-
-	const URI = "https://playground.4geeks.com/apis/fake/todos/user/"
-
-	const handleInput = (e) => {
-		let texto = e.target.value
+const handleChange = (event) => {
+		setTarea({
+			...tarea,
+			[event.target.name]: event.target.value
+		})
+}
+	const handleInput = async (e) => {
 		if (e.keyCode == 13) {
-			setTarea(texto)
-			setLista([...lista, texto])
-		}
-	}
+			try {
+				let response = await fetch(urlBase, {
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify([...lista, tarea])
+				})
+				if (response.ok) {
+					getTask()
+				}
+			} catch (error) {
+				console.log(error)
 
-	const deleteTask = (index) => {
-		let tempArr = lista.slice() //copiar el estado lista en una variable auxiliar
-		tempArr = tempArr.filter((item, index2) => { return index2 != index })
-		setLista(tempArr)
-	}
-
-	const handleUser = (e) => {
-		let nombreUsuario = e.target.value
-		setUsername(nombreUsuario)
-	}
-
-	useEffect(()=>{
-		const cargaLista = async () => {
-			let response = await fetch(URI + username) //como obviamos el 2do parámetro, es método GET
-			// response en este punto es una promesa
-
-			if (response.ok) {
-				//hago algo aquí si status está entre 200-299
-				let objResponse = await response.json()
-				console.log("respuesta ok: ", objResponse) //[{done:false, label:"Ir al cine"}]
-				setLista(objResponse)
-
-			} else {
-				//error
-				console.log("Error respuesta")
 			}
 		}
+	}
 
-		cargaLista()
 
-	},[username])
+	const deleteTask = async (index) => {
+		let tempArr = lista.slice() //copiar el estado lista en una variable auxiliar
+		tempArr = tempArr.filter((item, index2) => { return index2 != index })
+		try {
+			let response = await fetch(urlBase, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify(tempArr)
+			})
+			if (response.ok) {
+				getTask()
+			}
+		} catch (error) {
+			console.log(error)
+
+		}
+	}
+
+
+	const getTask = async () => {
+		try {
+			let response = await fetch(urlBase)
+			let data = await response.json()
+			if (response.ok) {
+				setLista(data)
+			}
+			if (response.status == 404) {
+				//crear un usuario
+				createUser()
+			}
+		} catch (error) {
+			console.log(error)
+
+		}
+	}
+	const createUser = async () => {
+		try {
+			let response = await fetch(urlBase, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify([])
+			})
+			if (response.ok) {
+				getTask()
+			}
+		} catch (error) {
+			console.log(error)
+
+		}
+	}
+	useEffect(() => { getTask() }, [])
 
 	return (
-		<>
-			<div className="container text-center mt-5 caja ">
-				<div className="container text-center mt-5 display-5 todos">ToDos</div>
-				<div className="paper">
-				<input className="container border-top-0 border-light" placeholder="Usuario"
-						onKeyUp={
-							(e) => { handleUser(e)}
-						} />
-					<input className="container border-top-0 border-light" placeholder="Agregar Tarea"
-						onKeyUp={
-							(e) => { handleInput(e) }
-						} />
-					<div>
-						<ul className="list-group list-group-flush ">
-							{
-								lista && lista.length > 0 ?
-									<>{
-										lista.map((item, index) => {
-											return <li className="list-group-item border" key={index}>
-												{item}
-												<button type="button" className="btn btn-outline-light boton text-danger"onClick={e => { deleteTask(index) }}><i class="fa-solid fa-x"></i>
-												</button>
-											</li>
-										})
-									}</>
-									: "Agregar tarea"	
-							}
-						</ul>
+			<>
+				<div className="container text-center mt-5 caja ">
+					<div className="container text-center mt-5 display-5 todos">ToDos</div>
+					<div className="paper">
+						<input className="container border-top-0 border-light" placeholder="Usuario"
+							onKeyUp={
+								(e) => { handleUser(e) }
+							} />
+						<input className="container border-top-0 border-light" placeholder="Agregar Tarea"
+							onKeyUp={
+								(e) => { handleInput(e) }
+							} />
+						<div>
+							<ul className="list-group list-group-flush ">
+								{
+									lista && lista.length > 0 ?
+										<>{
+											lista.map((item, index) => {
+												return <li className="list-group-item border" key={index}>
+													{item}
+													<button type="button" className="btn btn-outline-light boton text-danger" onClick={e => { deleteTask(index) }}><i class="fa-solid fa-x"></i>
+													</button>
+												</li>
+											})
+										}</>
+										: "Agregar tarea"
+								}
+							</ul>
+						</div>
 					</div>
+
 				</div>
-
-			</div>
-		</>
-	);
+			</>
+		);
 };
-
 export default Home;
